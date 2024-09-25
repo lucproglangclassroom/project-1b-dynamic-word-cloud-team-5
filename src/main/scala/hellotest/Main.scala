@@ -29,17 +29,18 @@ object Main {
 
               // Split the input line into individual words
               val words = delimiterPattern.split(line).filter(_.nonEmpty)
-              // Logs words after theyre filtered with delimiterPattern
+              // Logs words after they're filtered with delimiterPattern
               logger.debug(s"Words after filtering: ${words.mkString(", ")}")  
 
               words.foreach { word =>
-                if (word.length >= config.lengthAtLeast) {
+                val normalizedWord = word.toLowerCase.nn
+                if (normalizedWord.length >= config.lengthAtLeast) {
                   // Add this to recent words because it is long enough to qualify
-                  recentWords.enqueue(word)
+                  recentWords.enqueue(normalizedWord)
                   // Add 1 to its count
-                  wordCount(word) = wordCount.getOrElse(word, 0) + 1
+                  wordCount(normalizedWord) = wordCount.getOrElse(normalizedWord, 0) + 1
                   // Logs an added word
-                  logger.debug(s"Added word: '$word', new count: ${wordCount(word)}")
+                  logger.debug(s"Added word: '$normalizedWord', new count: ${wordCount(normalizedWord)}")
 
                   // Slide window if it has exceeded the max length
                   if (recentWords.size > config.windowSize) {
