@@ -1,3 +1,5 @@
+package hellotest
+
 import scopt.OParser
 
 // Default values

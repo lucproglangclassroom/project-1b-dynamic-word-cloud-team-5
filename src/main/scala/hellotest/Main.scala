@@ -1,3 +1,5 @@
+package hellotest
+
 import scala.io.StdIn
 import scala.util.matching.Regex
 import scala.collection.mutable
