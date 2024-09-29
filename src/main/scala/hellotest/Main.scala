@@ -1,11 +1,13 @@
 package hellotest
 
 import scala.util.matching.Regex
-import org.log4s.getLogger
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.io.StdIn
 
 // Main object to wire up everything and run the program.
 object Main {
-  private val logger = getLogger("Main")
+  var logger: Logger = LoggerFactory.getLogger("Dynamic Word Cloud").nn
 
   def main(args: Array[String]): Unit = {
     // Validate and parse command-line arguments
@@ -17,8 +19,14 @@ object Main {
     // Create word counter and observer
     val wordCounter = new WordCounter(config.windowSize, config.cloudSize)
 
+    // Define the inputSource to read from standard input
+    val inputSource: () => Option[String] = () => {
+      val input = StdIn.readLine() // Read a line from standard input
+      Option(input) // Wrap the input in Option
+    }
+
     // Create and start the input processor
-    val inputProcessor = new InputProcessor(delimiterPattern, config.lengthAtLeast, wordCounter)
+    val inputProcessor: InputProcessor = new InputProcessor(delimiterPattern, config.lengthAtLeast, wordCounter, inputSource, logger)
 
     // Add shutdown hook
     sys.addShutdownHook {

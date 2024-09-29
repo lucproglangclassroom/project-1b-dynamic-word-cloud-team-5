@@ -1,17 +1,15 @@
 package hellotest
 
-import scala.io.StdIn
+import org.slf4j.Logger
 import scala.util.control.NonFatal
 import scala.util.matching.Regex
-import org.log4s.getLogger
 
 // InputProcessor handles input reading and processing using the WordCounter.
-class InputProcessor(delimiterPattern: Regex, minWordLength: Int, wordCounter: WordCounter) {
-  private val logger = getLogger("InputProcessor")
+class InputProcessor(delimiterPattern: Regex, minWordLength: Int, wordCounter: WordCounter, inputSource: () => Option[String], logger: Logger) {
 
   def processInput(): Unit = {
     try {
-      Iterator.continually(Option(StdIn.readLine()))
+      Iterator.continually(inputSource())
         .takeWhile(_.isDefined)
         .foreach { lineOpt =>
           lineOpt.foreach { line =>
@@ -29,7 +27,7 @@ class InputProcessor(delimiterPattern: Regex, minWordLength: Int, wordCounter: W
         }
     } catch {
       case _: InterruptedException =>
-        logger.info("Input processing interrupted.")
+        logger.error("Input processing interrupted.")
       case NonFatal(e) =>
         logger.error(s"An error occurred during input processing: ${e.getMessage}")
     } finally {
