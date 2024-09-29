@@ -3,7 +3,7 @@ package hellotest
 import scopt.OParser
 
 // Default values
-case class Config(cloudSize: Int = 10, lengthAtLeast: Int = 6, windowSize: Int = 1000)
+case class Config(cloudSize: Int = 10, lengthAtLeast: Int = 6, windowSize: Int = 1000, batchSize: Int = 100)
 
 object ArgsParser {
   val builder = OParser.builder[Config]
@@ -26,7 +26,12 @@ object ArgsParser {
       opt[Int]('w', "window-size") //arg 3 window size
         .valueName("<windowSize>")
         .action((x, c) => c.copy(windowSize = x))
-        .text("Size of the moving window (default: 1000)")
+        .text("Size of the moving window (default: 1000)"),
+      
+      opt[Int]('b', "batch-size") //arg 4 batch size
+        .valueName("<batchSize>")
+        .action((x, c) => c.copy(batchSize = x))
+        .text("Number of words to process before printing (default: 100)")
     )
   }
 
@@ -34,5 +39,3 @@ object ArgsParser {
     OParser.parse(parser, args, Config())
   }
 }
-
-

@@ -35,7 +35,9 @@ class junitSpec extends AnyFlatSpec with Matchers {
 
           // Delete it from the map if it no longer appears in the window
           if (wordCount(oldestWord) <= 0) {
-            wordCount.remove(oldestWord)
+            wordCount.remove(oldestWord) match {
+            case Some(_) => // Successfully removed
+            case None => // Word was not found
           }
         }
       }

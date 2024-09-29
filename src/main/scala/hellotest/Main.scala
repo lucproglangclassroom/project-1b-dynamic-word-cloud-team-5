@@ -17,7 +17,10 @@ object Main {
     val delimiterPattern: Regex = "[^\\p{Alpha}0-9']+".r
 
     // Create word counter and observer
-    val wordCounter = new WordCounter(config.windowSize, config.cloudSize)
+    val wordCounter = new WordCounter(config.windowSize, config.cloudSize, config.batchSize)
+
+      // Create and start the Les Misérables processor
+    val lesMisProcessor = new LesMisProcessor(delimiterPattern, config.lengthAtLeast, wordCounter, logger)
 
     // Define the inputSource to read from standard input
     val inputSource: () => Option[String] = () => {
@@ -32,6 +35,8 @@ object Main {
     sys.addShutdownHook {
       logger.info("Shutting down gracefully...")
     }
+
+    lesMisProcessor.processFile("/workspace/project-1b-dynamic-word-cloud-team-5/src/main/scala/hellotest/lesmis.txt")
 
     // Process input
     inputProcessor.processInput()
