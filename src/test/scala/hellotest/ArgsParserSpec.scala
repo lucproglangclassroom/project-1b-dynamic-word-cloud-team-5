@@ -7,6 +7,11 @@ import org.scalatest.matchers.should.Matchers
 
 class ArgsParserSpec extends AnyFlatSpec with Matchers {
 
+  // Provide implicit CanEqual instances
+  given CanEqual[Option[Config], Option[Config]] = CanEqual.derived
+  given CanEqual[Option[Config], Some[Config]] = CanEqual.derived
+  given CanEqual[Option[Config], None.type] = CanEqual.derived
+
   "ArgsParser" should "parse default arguments correctly" in {
     val args = Array.empty[String]
     val config = ArgsParser.parseArgs(args)
