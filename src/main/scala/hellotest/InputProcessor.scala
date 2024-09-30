@@ -27,7 +27,7 @@ class InputProcessor(delimiterPattern: Regex, minWordLength: Int, wordCounter: W
         }
     } catch {
       case _: InterruptedException =>
-        logger.error("Input processing interrupted.")
+        logger.info("Application interrupted (User Interruption Detected). Stopping input processing...")
       case NonFatal(e) =>
         logger.error(s"An error occurred during input processing: ${e.getMessage}")
     } finally {

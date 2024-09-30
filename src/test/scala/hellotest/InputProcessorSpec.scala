@@ -74,7 +74,7 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
     inputProcessor.processInput()
 
     // Verify if the logger was called with the expected message
-    verify(logger).error(contains("Input processing interrupted."))
+    verify(logger).info(contains("Application interrupted (User Interruption Detected). Stopping input processing..."))
     verify(logger).info(contains("Exiting input processing."))
 
   }
