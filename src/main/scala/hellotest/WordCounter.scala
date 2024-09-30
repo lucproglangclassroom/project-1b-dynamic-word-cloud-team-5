@@ -61,6 +61,7 @@ class WordCounter(windowSize: Int, cloudSize: Int, batchSize: Int) {
     // Format and print the words in the required format: "word: count"
     val formattedWords = sortedWords.map { case (word, count) => s"$word: $count" }.mkString(" ")
 
+
     // Print to console
     println(formattedWords)
     logger.debug(s"Recent words (sorted and formatted): $formattedWords")
