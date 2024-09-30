@@ -5,8 +5,8 @@ import scala.collection.mutable
 
 class junitSpec extends AnyFlatSpec with Matchers {
 
-  // this is for testing. this is similar to main logic
-  def processLine(line: String, lengthAtLeast: Int): String = {
+  // This is for testing. This is similar to main logic
+  def processLine(line: String, lengthAtLeast: Int, batchSize: Int): String = {
     // Regular expression to match non-alphanumeric characters
     val delimiterPattern: Regex = "[^\\p{Alpha}0-9']+".r
 
@@ -35,9 +35,7 @@ class junitSpec extends AnyFlatSpec with Matchers {
 
           // Delete it from the map if it no longer appears in the window
           if (wordCount(oldestWord) <= 0) {
-            wordCount.remove(oldestWord) match {
-            case Some(_) => // Successfully removed
-            case None => // Word was not found
+            wordCount.remove(oldestWord)
           }
         }
       }
@@ -51,59 +49,58 @@ class junitSpec extends AnyFlatSpec with Matchers {
   }
 
   // Replace runMainWithInput with the processLine function
-  def runMainWithInput(input: String): String = {
+  def runMainWithInput(input: String, batchSize: Int): String = {
     input match {
-      case "apple banana apple kiwi banana apple" => processLine(input, 1) // Assuming lengthAtLeast is 1 for this test case
+      case "apple banana apple kiwi banana apple" => processLine(input, 1, batchSize) // Include batchSize
       case "" => ""
-      case "Apple apple" => processLine(input, 1)  // Handle case insensitivity
-      case "apple! banana." => processLine(input, 1)  // Handle special characters
-      case "apple1 apple2 banana1 banana2" => processLine(input, 1)  // Words with numbers
-      case "apple    banana   apple" => processLine(input, 1)  // Multiple spaces
-      case "apple, banana; apple! banana?" => processLine(input, 1)  // Ignore punctuation
+      case "Apple apple" => processLine(input, 1, batchSize)  // Handle case insensitivity
+      case "apple! banana." => processLine(input, 1, batchSize)  // Handle special characters
+      case "apple1 apple2 banana1 banana2" => processLine(input, 1, batchSize)  // Words with numbers
+      case "apple    banana   apple" => processLine(input, 1, batchSize)  // Multiple spaces
+      case "apple, banana; apple! banana?" => processLine(input, 1, batchSize)  // Ignore punctuation
       case _ => "wrong"  // Default case for unexpected input
     }
   }
 
-
   it should "handle empty input correctly" in {
     val input = ""
     val expectedOutput = ""
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput  
   }
 
   it should "handle case sensitivity correctly" in {
     val input = "Apple apple"
     val expectedOutput = "apple: 2\n"  
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput 
   }
 
   it should "handle special characters in input" in {
     val input = "apple! banana."
     val expectedOutput = "apple: 1 banana: 1\n"
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput 
   }
 
   it should "handle words with numbers" in {
     val input = "apple1 apple2 banana1 banana2"
     val expectedOutput = "apple1: 1 apple2: 1 banana1: 1 banana2: 1\n"
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput 
   }
 
   it should "handle multiple spaces between words" in {
     val input = "apple    banana   apple"
     val expectedOutput = "apple: 2 banana: 1\n"
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput  
   }
 
   it should "ignore punctuation in word counting" in {
     val input = "apple, banana; apple! banana?"
     val expectedOutput = "apple: 2 banana: 2\n"
-    val actualOutput: String = runMainWithInput(input)
+    val actualOutput: String = runMainWithInput(input, 5)
     actualOutput shouldEqual expectedOutput  
   }
 }
