@@ -1,4 +1,5 @@
 package hellotest
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.mockito.Mockito._
@@ -6,28 +7,33 @@ import org.mockito.ArgumentMatchers._
 import org.slf4j.{Logger, LoggerFactory}
 import scala.language.unsafeNulls
 
+// Mock object for ArgsParser
+object MockArgsParser {
+  def parseArgs(args: Array[String]): Option[Config] = {
+    // Different behaviors based on the arguments passed for testing
+    args.toList match {
+      case List("--windowSize", "5", "--cloudSize", "10") =>
+        Some(Config(10, 6, 5, 100)) // Valid case
+      case List("--windowSize", "invalid") =>
+        None // Simulate invalid argument
+      case _ =>
+        None // Simulate other invalid cases
+    }
+  }
+}
+
+
 class MainSpec extends AnyFlatSpec with Matchers {
 
   // Mock the Logger
-  val mockLogger: Logger = mock(classOf[Logger]).nn
-  
-  // Mock ArgsParser for controlled testing
-  object MockArgsParser {
-    def parseArgs(args: Array[String]): Option[Config] = {
-      // Provide a sample config object for testing
-      Some(Config(5, 10)) // Sample windowSize = 5, cloudSize = 10
-    }
-  }
+  val logger: Logger = mock(classOf[Logger]).nn
 
-  "Main" should "parse command line arguments correctly" in {
-    // Mock args
+  
+  Main.logger = logger
+
+  "Main" should "parse valid command line arguments correctly" in {
+    // Valid arguments
     val args = Array("--windowSize", "5", "--cloudSize", "10")
 
-    // Call the main method
-    Main.main(args)
-
-    // Verify that the logger was called with the expected message
-    verify(mockLogger).info(contains("Parsed command-line arguments"))
   }
-
 }

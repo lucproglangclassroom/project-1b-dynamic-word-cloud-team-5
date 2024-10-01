@@ -8,7 +8,7 @@ import scala.io.StdIn
 // Main object to wire up everything and run the program.
 object Main {
   var logger: Logger = LoggerFactory.getLogger("Dynamic Word Cloud").nn
-
+  
   def main(args: Array[String]): Unit = {
     // Validate and parse command-line arguments
     val config = ArgsParser.parseArgs(args).get
@@ -20,7 +20,7 @@ object Main {
     val wordCounter = new WordCounter(config.windowSize, config.cloudSize, config.batchSize)
 
     // Create and start the Les Misérables processor
-    // val lesMisProcessor = new LesMisProcessor(delimiterPattern, config.lengthAtLeast, wordCounter, logger)
+    //val lesMisProcessor = new LesMisProcessor(delimiterPattern, config.lengthAtLeast, wordCounter, logger)
 
     // Define the inputSource to read from standard input
     val inputSource: () => Option[String] = () => {
