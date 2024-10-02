@@ -16,6 +16,7 @@ object Main {
 
     val delimiterPattern: Regex = "[^\\p{Alpha}0-9']+".r
 
+
     // Create word counter and observer
     val wordCounter = new WordCounter(config.windowSize, config.cloudSize, config.batchSize)
 

@@ -3,7 +3,7 @@ package hellotest
 import scopt.OParser
 
 // Default values
-case class Config(cloudSize: Int = 10, lengthAtLeast: Int = 6, windowSize: Int = 1000, batchSize: Int = 100)
+case class Config(cloudSize: Int = 10, lengthAtLeast: Int = 6, windowSize: Int = 1000, batchSize: Option[Int] = None)
 
 object ArgsParser {
   val builder = OParser.builder[Config]
@@ -30,7 +30,7 @@ object ArgsParser {
       
       opt[Int]('b', "batch-size") //arg 4 batch size
         .valueName("<batchSize>")
-        .action((x, c) => c.copy(batchSize = x))
+        .action((x, c) => c.copy(batchSize = Some(x)))
         .text("Number of words to process before printing (default: 100)")
     )
   }

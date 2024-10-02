@@ -4,7 +4,7 @@ import scala.collection.mutable
 import org.log4s.getLogger
 
 // WordCounter manages word counts and notifies observers.
-class WordCounter(windowSize: Int, cloudSize: Int, batchSize: Int) {
+class WordCounter(windowSize: Int, cloudSize: Int, batchSize: Option[Int] = None) {
   private val logger = getLogger("WordCounter")
   private val wordCount = mutable.Map[String, Int]()
   private val recentWords = mutable.Queue[String]()
@@ -44,12 +44,20 @@ class WordCounter(windowSize: Int, cloudSize: Int, batchSize: Int) {
   }
 
   // Print and notify observers after processing a batch of words
-  if (processedWords >= batchSize) {
-    printRecentWords()
-    notifyObservers()
-    processedWords = 0 // Reset the counter
+  if (recentWords.size >= windowSize){ 
+    batchSize match {
+      case Some(size) if processedWords >= size =>
+      printRecentWords()
+      notifyObservers()
+      processedWords = 0
+    case None =>
+      printRecentWords()
+      notifyObservers()
+    case _ =>
+    }
   }
 }
+
 
   // Method to print the recentWords queue with word counts, limited to cloudSize
   private def printRecentWords(): Unit = {

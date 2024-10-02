@@ -13,7 +13,7 @@ object MockArgsParser {
     // Different behaviors based on the arguments passed for testing
     args.toList match {
       case List("--windowSize", "5", "--cloudSize", "10") =>
-        Some(Config(10, 6, 5, 100)) // Valid case
+        Some(Config(10, 6, 5, Some(100))) // Valid case
       case List("--windowSize", "invalid") =>
         None // Simulate invalid argument
       case _ =>

@@ -15,7 +15,7 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar {
   val minWordLength = 3
 
   "LesMisProcessor" should "log debug messages for filtered words while processing a file" in {
-    val wordCounter = new MockWordCounter(5, 10, 2)
+    val wordCounter = new MockWordCounter(5, 10, Some(2))
 
     // Create a temporary file with some content
     val tempFilePath = Files.createTempFile("testfile", ".txt")
@@ -42,7 +42,7 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar {
     val nonExistentFilePath = "non_existent_file.txt"
 
     // Create an instance of LesMisProcessor with the mocked logger
-    val lesMisProcessor = new LesMisProcessor(delimiterPattern, minWordLength, new MockWordCounter(5, 10, 2), logger)
+    val lesMisProcessor = new LesMisProcessor(delimiterPattern, minWordLength, new MockWordCounter(5, 10, Some(2)), logger)
 
     // Call the processFile method
     lesMisProcessor.processFile(nonExistentFilePath)
@@ -54,7 +54,7 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar {
 }
 
 // Mock implementation of WordCounter for testing purposes
-class MockWordCounter(windowSize: Int, cloudSize: Int, batchSize: Int) extends WordCounter(windowSize, cloudSize, batchSize) {
+class MockWordCounter(windowSize: Int, cloudSize: Int, batchSize: Option[Int]) extends WordCounter(windowSize, cloudSize, batchSize) {
   var processedWords: List[String] = Nil
 
   override def processWord(word: String): Unit = {

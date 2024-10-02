@@ -9,8 +9,7 @@ class WordCounterTest extends AnyFlatSpec with Matchers with MockitoSugar {
   "WordCounter" should "notify observers correctly" in {
     val windowSize = 5
     val cloudSize = 3
-    val batchSize = 2
-    val wordCounter = new WordCounter(windowSize, cloudSize, batchSize)
+    val wordCounter = new WordCounter(windowSize, cloudSize)
 
     // Create and register a mock observer
     val observer = mock[WordCountObserver]
