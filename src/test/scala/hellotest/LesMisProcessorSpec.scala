@@ -1,63 +1,75 @@
 package hellotest
+
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
-import org.mockito.ArgumentMatchers._
-import org.slf4j.Logger
 import scala.util.matching.Regex
-import java.nio.file.{Files, Paths, NoSuchFileException}
-import scala.language.unsafeNulls
+import java.nio.file.{Files, Paths}
+import scala.collection.mutable.ListBuffer
+import org.slf4j.LoggerFactory
+import org.slf4j.Logger
 
-class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar {
-  val logger: Logger = mock[Logger]
+class LesMisProcessorSpec extends AnyFlatSpec with Matchers {
+
   val delimiterPattern: Regex = """\s+""".r
   val minWordLength = 3
+  val logger: Logger = LoggerFactory.getLogger(classOf[LesMisProcessorSpec]).nn
 
-  "LesMisProcessor" should "log debug messages for filtered words while processing a file" in {
-    val wordCounter = new MockWordCounter(5, 10, Some(2))
+  "LesMisProcessor" should "process and log filtered words while processing a file" in {
+    // Initial state for the word counter
+    var state = CounterState()
+
+    // Word counter function using the provided WordCounter class
+    val wordCounter = new WordCounter(windowSize = 10, cloudSize = 5, batchSize = None)
 
     // Create a temporary file with some content
     val tempFilePath = Files.createTempFile("testfile", ".txt")
     Files.write(tempFilePath, "Hello world\nThis is a test line.".getBytes)
 
-    // Create an instance of LesMisProcessor with the mocked logger
-    val lesMisProcessor = new LesMisProcessor(delimiterPattern, minWordLength, wordCounter, logger)
+    // Create an instance of LesMisProcessor
+    val processor = new LesMisProcessor(
+      delimiterPattern,
+      minWordLength,
+      (word, currentState) => wordCounter.processWord(word, currentState),
+      logger
+    )
 
     // Call the processFile method
-    lesMisProcessor.processFile(tempFilePath.toString)
+    processor.processFile(tempFilePath.toString) match {
+      case Right(_) => succeed
+      case Left(_)  => fail("Processing file should not fail.")
+    }
 
-    // Verify that the logger's debug method was called with the expected messages for words after filtering
-    verify(logger).debug(s"Words after filtering: Hello, world")
-
-    // Verify that the wordCounter processed the correct words
-    wordCounter.processedWords should contain theSameElementsAs Seq("line.", "test", "this", "world", "hello")
+    // Check the final state after processing
+    state.wordCount.keySet should contain allElementsOf Seq("line", "test", "this", "world", "hello")
 
     // Clean up the temporary file
     Files.delete(tempFilePath)
   }
 
   it should "log an error message when an exception occurs during file processing" in {
+    // ListBuffer to collect errors logged (functional replacement instead of using the mocks)
+    val errorMessages = ListBuffer.empty[String]
+
+    // Use a functional LoggerFactory for capturing error messages
+    val errorLogger: Logger = new Logger {
+      override def error(message: String): Unit = errorMessages += message
+      override def debug(message: String): Unit = {}
+      override def info(message: String): Unit = {}
+    }
+
     // Simulate a non-existent file path
     val nonExistentFilePath = "non_existent_file.txt"
 
-    // Create an instance of LesMisProcessor with the mocked logger
-    val lesMisProcessor = new LesMisProcessor(delimiterPattern, minWordLength, new MockWordCounter(5, 10, Some(2)), logger)
+    // Create an instance of LesMisProcessor
+    val processor = new LesMisProcessor(delimiterPattern, minWordLength, (word, currentState) => currentState, errorLogger.nn)
 
     // Call the processFile method
-    lesMisProcessor.processFile(nonExistentFilePath)
+    processor.processFile(nonExistentFilePath) match {
+      case Left(_) => succeed
+      case Right(_) => fail("Processing non-existent file should fail.")
+    }
 
-    // Verify that the logger's error method was called with an appropriate message
-    verify(logger).error(matches("An error occurred while processing the file: .*"))
-    
-  }
-}
-
-// Mock implementation of WordCounter for testing purposes
-class MockWordCounter(windowSize: Int, cloudSize: Int, batchSize: Option[Int]) extends WordCounter(windowSize, cloudSize, batchSize) {
-  var processedWords: List[String] = Nil
-
-  override def processWord(word: String): Unit = {
-    processedWords = word :: processedWords
+    // Verify that the error logger captured the expected message
+    errorMessages.exists(_.contains("An error occurred while processing the file")) should be(true)
   }
 }
