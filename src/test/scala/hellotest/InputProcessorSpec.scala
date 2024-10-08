@@ -4,7 +4,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito.*
-import org.mockito.ArgumentMatchers.{anyString, contains}
+import org.mockito.ArgumentMatchers.{any, anyString, contains}
 import org.scalatest.BeforeAndAfter
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -20,6 +20,7 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
   var logger: Logger = _
   var wordCounter: WordCounter = _
 
+
   before {
     inputLines = List("This is a test line", "Another line for testing")
     iterator = inputLines.iterator
@@ -34,16 +35,18 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
   it should "process input lines correctly" in {
     val inputProcessor = new InputProcessor(delimiterPattern, minWordLength, wordCounter, inputSource, logger)
 
+    when(wordCounter.nn.processWord(anyString(), any(classOf[CounterState]))).thenReturn(CounterState())
+
     // Call the method to be tested
     inputProcessor.processInput()
 
     // Verify that the processWord method is called with the correct words
-    verify(wordCounter, times(1)).nn.processWord("another")
-    verify(wordCounter, times(1)).nn.processWord("testing")
-    verify(wordCounter, times(0)).nn.processWord("this")
-    verify(wordCounter, times(0)).nn.processWord("is")
-    verify(wordCounter, times(0)).nn.processWord("test")
-    verify(wordCounter, times(0)).nn.processWord("line")
+    verify(wordCounter, times(1)).nn.processWord(("another"), any(classOf[CounterState]))
+    verify(wordCounter, times(1)).nn.processWord(("testing"), any(classOf[CounterState]))
+    verify(wordCounter, times(0)).nn.processWord(("this"), any(classOf[CounterState]))
+    verify(wordCounter, times(0)).nn.processWord(("is"), any(classOf[CounterState]))
+    verify(wordCounter, times(0)).nn.processWord(("test"), any(classOf[CounterState]))
+    verify(wordCounter, times(0)).nn.processWord(("line"), any(classOf[CounterState]))
     verify(logger, times(2)).debug(contains("Processing line:"))
     verify(logger, times(2)).debug(contains("Words after filtering:"))
   }
@@ -51,7 +54,7 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
     val inputProcessor = new InputProcessor(delimiterPattern, minWordLength, wordCounter, inputSource, logger)
     doAnswer(invocation => {
       throw new RuntimeException("Simulated Error")
-    }).when(wordCounter).nn.processWord(anyString())
+    }).when(wordCounter).nn.processWord((anyString()), any(classOf[CounterState]))
 
     // Process the input
     inputProcessor.processInput()
@@ -68,7 +71,7 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
     val inputProcessor = new InputProcessor(delimiterPattern, minWordLength, wordCounter, inputSource, logger)
     doAnswer(invocation => {
       throw new InterruptedException("Simulated Interruption")
-    }).when(wordCounter).nn.processWord(anyString())
+    }).when(wordCounter).nn.processWord((anyString()), any(classOf[CounterState]))
 
     // Process the input
     inputProcessor.processInput()
