@@ -4,12 +4,16 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito.*
-import org.mockito.ArgumentMatchers.{any, anyString, contains}
+import org.mockito.ArgumentMatchers.{any, anyString, contains, eq}
 import org.scalatest.BeforeAndAfter
 import org.slf4j.{Logger, LoggerFactory}
-
+import org.scalactic.Prettifier.default 
 import scala.language.unsafeNulls
 import scala.util.matching.Regex
+import org.mockito.Mockito._
+import org.mockito.ArgumentCaptor
+import scala.collection.JavaConverters._
+
 
 class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar with BeforeAndAfter {
   // Initial and static variables
@@ -34,19 +38,25 @@ class InputProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar wit
 
   it should "process input lines correctly" in {
     val inputProcessor = new InputProcessor(delimiterPattern, minWordLength, wordCounter, inputSource, logger)
-
-    when(wordCounter.nn.processWord(anyString(), any(classOf[CounterState]))).thenReturn(CounterState())
+    val argumentCaptor = ArgumentCaptor.forClass(classOf[String])
+    when(wordCounter.nn.processWord(argumentCaptor.capture(), any(classOf[CounterState]))).thenReturn(CounterState())
 
     // Call the method to be tested
     inputProcessor.processInput()
 
     // Verify that the processWord method is called with the correct words
-    verify(wordCounter, times(1)).nn.processWord(("another"), any(classOf[CounterState]))
-    verify(wordCounter, times(1)).nn.processWord(("testing"), any(classOf[CounterState]))
-    verify(wordCounter, times(0)).nn.processWord(("this"), any(classOf[CounterState]))
-    verify(wordCounter, times(0)).nn.processWord(("is"), any(classOf[CounterState]))
-    verify(wordCounter, times(0)).nn.processWord(("test"), any(classOf[CounterState]))
-    verify(wordCounter, times(0)).nn.processWord(("line"), any(classOf[CounterState]))
+    val capturedArguments: List[String] = argumentCaptor.getAllValues.asScala.toList
+    val expectedWords = List("another", "testing")
+    capturedArguments should contain theSameElementsAs expectedWords
+    
+
+    // verify(wordCounter, times(1)).processWord("another", any(classOf[CounterState]))
+
+    //verify(wordCounter, times(1)).nn.processWord(eq("testing").asInstanceOf[String], any(classOf[CounterState]))
+    //verify(wordCounter, times(0)).nn.processWord(eq("this").asInstanceOf[String], any(classOf[CounterState]))
+    //verify(wordCounter, times(0)).nn.processWord(eq("is").asInstanceOf[String], any(classOf[CounterState]))
+    //verify(wordCounter, times(0)).nn.processWord(eq("test").asInstanceOf[String], any(classOf[CounterState]))
+    //verify(wordCounter, times(0)).nn.processWord(eq("line").asInstanceOf[String], any(classOf[CounterState]))
     verify(logger, times(2)).debug(contains("Processing line:"))
     verify(logger, times(2)).debug(contains("Words after filtering:"))
   }

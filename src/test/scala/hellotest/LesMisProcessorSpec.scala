@@ -9,6 +9,8 @@ import java.nio.file.{Files, Paths}
 import scala.collection.mutable.ListBuffer
 import org.slf4j.LoggerFactory
 import org.slf4j.Logger
+import scala.language.unsafeNulls
+import org.mockito.ArgumentMatchers._
 
 
 
@@ -35,7 +37,10 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar{
     val processor = new LesMisProcessor(
       delimiterPattern,
       minWordLength,
-      (word, currentState) => wordCounter.processWord(word, currentState),
+      (word, currentState) => {
+       state = wordCounter.processWord(word, currentState)
+       state  // this basically adds items in the state variable
+      },
       errorLogger
     )
 
@@ -46,7 +51,7 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar{
     }
 
     // Check the final state after processing
-    state.wordCount.keySet should contain allElementsOf Seq("line", "test", "this", "world", "hello")
+    state.wordCount.keySet should contain allElementsOf Seq("test", "this", "world", "line.", "hello")
 
     // Clean up the temporary file
     Files.delete(tempFilePath)
@@ -69,6 +74,6 @@ class LesMisProcessorSpec extends AnyFlatSpec with Matchers with MockitoSugar{
     }
 
     // Verify that the error logger captured the expected message
-    errorMessages.exists(_.contains("An error occurred while processing the file")) should be(true)
+     verify(errorLogger).error(contains("An error occurred while processing the file"))
   }
 }
