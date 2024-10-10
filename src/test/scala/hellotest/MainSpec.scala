@@ -2,17 +2,26 @@ package hellotest
 
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
-import scala.language.unsafeNulls
+import scala.util.matching.Regex
+import org.slf4j.{Logger, LoggerFactory}
 
 class MainSpec extends AnyFlatSpec with Matchers {
 
-  "Main" should "parse valid command line arguments correctly and run without errors" in {
-    // Simulate valid command-line arguments
-    val args = Array("--window-size", "5", "--cloud-size", "10")
+  val logger: Logger = LoggerFactory.getLogger("Dynamic Word Cloud").nn
 
-    // Test the main function without modifying the logger
+  "Main" should "run with simulated input without errors" in {
+    // Simulated input 
+    val simulatedInput = List("hello world", "scala rocks", "functional programming", "exit").iterator
+    val inputSource: () => Option[String] = () => if (simulatedInput.hasNext) Some(simulatedInput.next()) else None
+
+    // Set up and run the main application with simulated input
+    val args = Array("--window-size", "5", "--cloud-size", "10")
+    val delimiterPattern: Regex = "[^\\p{Alpha}0-9']+".r
+    val wordCounter = new WordCounter(5, 10, None)
+    val inputProcessor = new InputProcessor(delimiterPattern, 6, wordCounter, inputSource, logger)
+
     noException should be thrownBy {
-      Main.main(args)
+      inputProcessor.processInput() // Process the simulated input
     }
   }
 
